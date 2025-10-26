@@ -1,0 +1,208 @@
+class Node:
+  def __init__(self, data):
+    self.data = data
+    self.next = None
+
+def PrintLinkedList(head):
+  currentNode = head
+  while currentNode:
+    print(currentNode.data, end=" -> ")
+    currentNode = currentNode.next
+  print("null")
+
+#1 Проверить, является ли список циклическим
+#Дан односвязный список.
+#Необходимо проверить, является ли этот список циклическим.
+#Циклическим (кольцевым) списком называется список, у которого последний узел ссылается на один из предыдущих узлов
+
+def FindCycle(head):
+  if head == None or head.next == None:
+    return False
+
+  slow = head
+  fast = head.next
+
+  while slow != fast:
+    if fast == None or fast.next == None:
+      return False
+    slow = slow.next
+    fast = fast.next.next
+
+  return True
+
+node1 = Node(7)
+node2 = Node(11)
+node3 = Node(3)
+node4 = Node(2)
+
+node1.next = node2
+node2.next = node3
+node3.next = node4
+node4.next = node2
+
+FindCycle(node1)
+
+#2 Развернуть односвязный список
+# Необходимо написать функцию, которая принимает на вход односвязный список и разворачивает его.
+def ReverseList(head):
+  prev_node = None
+  current_node = head
+  while current_node:
+    #стрелочку влево
+    next_node = current_node.next
+    current_node.next = prev_node
+    #итерация
+    prev_node = current_node
+    current_node = next_node
+
+  head = prev_node
+  return head
+
+node1 = Node(7)
+node2 = Node(11)
+node3 = Node(3)
+node4 = Node(2)
+
+node1.next = node2
+node2.next = node3
+node3.next = node4
+
+ReverseList(node1)
+
+PrintLinkedList(node4)
+
+#3 Найти середину списка
+#Дан связный список.
+#Необходимо найти середину списка, cделать это за O(n) без дополнительных аллокаций
+def MiddleNode(head):
+  slow = fast = head
+  while fast != None and fast.next != None:
+    slow = slow.next
+    fast = fast.next.next
+  return slow
+
+ReverseList(node4)
+node5 = Node(5)
+node4.next = node5
+PrintLinkedList(node1)
+MiddleNode(node1).data
+
+#4 Удалить элемент из односвязного списка
+#Необходимо написать функцию, которая принимает на вход односвязный список и некоторое целое число val.
+#Необходимо удалить узел из списка, значение которого равно val.
+def removeElements(head, val):
+  dummy = Node(None)
+  dummy.next = head
+  prev = dummy
+  cur = head
+  while cur != None:
+    if cur.data == val:
+      prev.next = cur.next
+    else:
+      prev = cur
+    cur = cur.next
+  return dummy.next
+
+PrintLinkedList(removeElements(node1,2))
+
+#5 Является ли одна строка исходной для другой
+#В исходную строку добавили некоторое количество символов.
+#Необходимо выявить, была ли строка a исходной для строки b.
+def IsSubsequence(a,b):
+  i,j = 0,0
+  if len(a) > len(b):
+    return False
+  while i < len(a) and j < len(b):
+    if a[i] == b [j]:
+      i += 1
+    j += 1
+  return i == len(a)
+
+IsSubsequence('abc', 'dahfhfbbbbcfh')
+
+#6 Является ли слово палиндромом?
+#Напишите функцию, которая принимает на вход строку и возвращает true, если она является палиндромом*.
+#В противном случае верните false.
+#*слово или текст, одинаково читающиеся в обоих направлениях.
+
+def IsPalindrome(s):
+  left = 0
+  right = len(s) - 1
+
+  while (left < right):
+    if s[left] != s[right]:
+      return False
+    left += 1
+    right -= 1
+
+  return True
+
+IsPalindrome("Mikasa")
+
+#7 Слияние двух отсортированных списков
+#Написать функцию, которая принимает на вход два отсортированных односвязных списка и
+#объединяет их в один отсортированный список.
+#При этом затраты по памяти должны быть O(1)
+#Входные данные: list1 = [3, 6, 8], list2 = [4, 7, 9, 11]
+#Выходные: [3,4,6,7,8,9,11]
+
+def MergeTwoSortedLists(list1, list2):
+    # Обработка пустых списков
+    if not list1:
+        return list2
+    if not list2:
+        return list1
+
+    # Выбираем голову для результирующего списка
+    head1, head2 = list1, list2
+    if list2.data < list1.data:
+        head1, head2 = list2, list1
+    
+    cur1, cur2 = head1, head2
+    
+    while cur1.next != None and cur2 != None:
+        if cur2.data <= cur1.next.data:
+            # Сохраняем ссылки
+            next1 = cur1.next
+            next2 = cur2.next
+            
+            # Вставляем cur2 между cur1 и cur1.next
+            cur1.next = cur2
+            cur2.next = next1
+            
+            # Перемещаем указатели
+            cur1 = cur2
+            cur2 = next2
+        else:
+            cur1 = cur1.next
+    
+    # Если во втором списке остались элементы, добавляем в конец первого списка голову второго (она подтягивает остальное, while не нужен)
+    if cur2 is not None:
+        cur1.next = cur2
+    
+    return head1
+
+
+list1 = Node(3)
+node1_2 = Node(6)
+node1_3 = Node(8)
+
+list1.next = node1_2
+node1_2.next = node1_3
+
+list2 = Node(4)
+node2_2 = Node(7)
+node2_2_1 = Node(7)
+node2_3 = Node(9)
+node2_4 = Node(11)
+node2_5 = Node(12)
+node2_6 = Node(13)
+
+list2.next = node2_2
+node2_2.next = node2_2_1
+node2_2_1.next = node2_3
+node2_3.next = node2_4
+node2_4.next = node2_5
+node2_5.next = node2_6
+
+PrintLinkedList(MergeTwoSortedLists(list2, list1))
