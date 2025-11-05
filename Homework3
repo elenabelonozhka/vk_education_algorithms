@@ -1,0 +1,218 @@
+#1 Найти корень числа (ближайшее целое).
+
+def binary_search_sqrt_safe(target):
+    if target < 0:
+        return float('nan')
+    if target == 0:
+        return 0
+    
+    l, r = 1, target
+    
+    # Оптимизация: уменьшаем правую границу для больших чисел
+    if target > 4:
+        r = target // 2
+    
+    while l <= r:
+        # Безопасное вычисление среднего (избегаем переполнения)
+        mid = l + (r - l) // 2
+        
+        # Избегаем mid * mid для очень больших чисел
+        if mid <= target // mid:  # Эквивалентно mid * mid <= target
+            l = mid + 1
+        else:
+            r = mid - 1
+    
+    # Находим ближайшее целое
+    diff_lower = target - r * r
+    diff_upper = (r + 1) * (r + 1) - target
+    
+    return r if diff_lower < diff_upper else r + 1
+
+binary_search_sqrt_safe(2)
+
+
+
+
+#2.1 Задача с принтерами
+def copyTime(n, x, y):
+  l = 0
+  r = (n - 1) * max(x, y)
+  while l + 1 < r:
+    mid = r + (l-r) // 2
+    if mid//x + mid//y < n - 1:
+      l = mid
+    else:
+      r = mid
+  return r + min(x, y)
+
+copyTime(39, 10, 24)
+
+
+
+
+
+
+#2.2 Задача с принтерами, аналитическое решение
+def lcm_func(a, b):
+    m = a * b
+    while a != 0 and b != 0:
+        if a > b:
+            a %= b
+        else:
+            b %= a
+    return m // (a + b)
+
+def copyTimeAnalytics(n, x, y):
+    if n == 1:
+        return min(x, y)
+    
+    fast, slow = min(x, y), max(x, y)
+    
+    # Находим НОК для определения цикла синхронизации
+    lcm = lcm_func(fast,slow)
+    
+    # За один цикл НОК делаем:
+    copies_per_cycle = lcm // fast + lcm // slow
+    
+    # Вычисляем полные циклы и остаток
+    full_cycles = (n - 1) // copies_per_cycle
+    remaining_copies = (n - 1) % copies_per_cycle
+    
+    time = min(x, y)  # первая копия
+    time += full_cycles * lcm  # полные циклы
+    
+    # Добавляем время для оставшихся копий
+    if remaining_copies > 0:
+        # Ищем минимальное время для remaining_copies
+        t1 = 0
+        t2 = 0
+        copies_made = 0
+        
+        while copies_made < remaining_copies:
+            if t1 + fast <= t2 + slow:
+                t1 += fast
+            else:
+                t2 += slow
+            copies_made += 1
+        
+        time += max(t1, t2)
+    
+    return time
+
+copyTimeAnalytics(39, 10, 24)
+
+
+
+
+
+
+#3 накормить животных
+def feedAnimals(animals, food):
+  if len(animals) == 0 or len(food) == 0:
+    return 0
+
+  animals.sort()
+  food.sort()
+  count = 0
+
+  for f in food:
+    if f >= animals[count]:
+      count += 1
+    if count == len(animals):
+      break
+  return count
+  
+feedAnimals([1,4,3,8], [8,2,3,2])
+
+
+
+
+
+
+
+#4 найти разницу между двух строк
+def extraLetter(a,b):
+  mapA = {}
+  for letter in a:
+    if letter not in mapA:
+      mapA[letter] = 1
+    else:
+      mapA[letter] += 1
+  
+  for letter in b:
+    if letter in mapA:
+      mapA[letter] -= 1
+      if mapA[letter] == 0:
+        del mapA[letter]
+        continue
+      continue
+    return letter
+  return ''
+
+extraLetter('fe', 'efo')
+
+
+
+
+
+#5 Сумма двух элементов. Решение с помощью хэш-таблицы с обработкой дубликатов. 
+def two_sum(nums, target):
+    seen = {}  # храним число -> индекс
+    
+    for i, num in enumerate(nums):
+        complement = target - num
+        
+        # Проверяем, видели ли мы complement
+        if complement in seen:
+            return [seen[complement], i]
+        
+        # Сохраняем текущий элемент в хэш-таблицу
+        seen[num] = i
+    
+    return []  # если решение не найдено
+
+nums = [2, 2, 1]
+target = 4
+print(two_sum(nums, target))
+
+
+
+
+
+
+#6 Сортировка Шелла
+def shell_sort(arr):
+    n = len(arr)
+    gap = n // 2
+    while gap > 0:
+        for current_position in range(gap, n):
+            m_gap = current_position
+            while m_gap >= gap and arr[m_gap] < arr[m_gap - gap]:
+                arr[m_gap], arr[m_gap - gap] = arr[m_gap - gap], arr[m_gap]
+                m_gap -= gap
+        gap = gap // 2
+    return arr
+
+
+arr = [12,11,9,8,16,24,19,3,7,88,72,63]
+shell_sort(arr)
+
+
+
+
+
+
+#7 Массив анаграмм
+def arrayAnagrams(arr):
+    dct = {}
+    for word in arr:
+        # Сортируем буквы слова для создания ключа
+        key = ''.join(sorted(word))
+        if key not in dct:
+            dct[key] = [word]
+        else:
+            dct[key].append(word)
+    
+    return list(dct.values())
+  
+arrayAnagrams(["awon","nowa","aaa","ooo","ooo"])
