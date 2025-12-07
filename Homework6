@@ -1,0 +1,282 @@
+#1 Последовательность без двух единиц
+
+def b_sequences(n):
+  # определяем базовые случаи
+  dp = [1, 2]
+
+  for i in range(2,n+1):
+    dp.append(dp[i - 1] + dp[i - 2])
+  
+  return dp[n]
+
+
+b_sequences(5) #13
+
+
+-----------------------------------------------------
+
+#2 Последовательность без трех единиц
+
+def b_sequences(n):
+  # определяем базовые случаи
+  dp = [1, 2, 4]
+
+  for i in range(3,n+1):
+    dp.append(dp[i - 1] + dp[i - 2] + dp[i - 3])
+  
+  return dp[n]
+
+
+b_sequences(4) #13
+
+------------------------------------------------------------
+
+#3 Наибольшая непрерывная возрастающая последовательность (ДП способ)
+#Частый метод ДП - создаем изначально массив из единиц
+
+def findLIS(nums):
+  if (len(nums) == 0):
+    return 0
+  
+  if (len(nums) == 1):
+    return 1
+  
+  dp = [1] * len(nums)
+  for i in range(1,len(nums)):
+    if (nums[i - 1] < nums[i]):
+      dp[i] = dp[i - 1] + 1
+
+  return max(dp)
+
+findLIS([3,1,4,7,2,11,9]) #3
+
+--------------------------------------------------------------------
+
+#3.2 Наибольшая непрерывная возрастающая последовательность (способ 2-ух указателей)
+
+def findLIS2(nums):
+  n = len(nums)
+  if (n == 0):
+    return 0
+  
+  if (n == 1):
+    return 1
+
+  left = 0
+  right = 0
+  max_len = 1
+  #цикл по массиву
+  while (left < n):
+    #цикл по возрастающей посл-сти (пока возрастает)
+    while (right < n-1 and nums[right] < nums[right+1]): #первое условие, чтобы не выйти за границу массива
+      right += 1
+    max_len = max(max_len, right-left+1) 
+    left = right+1 #вышли из цикла => посл-сть кончилась, ищем новую
+    right = left #при поиске новой посл-сти оба указателя начинают из одного места
+  return max_len
+
+findLIS2([1,1,3,5,2,3,0,4,7]) #3
+
+--------------------------------------------------------------------
+
+#4 Треугольник Паскаля. Итерационный подход. (рекурсивный не реализую, тк это вроде было просто для демонстрации - решение аналогичное, но без мемоизации)
+
+n = 6
+# создаем двумерный массив для хранения треугольника Паскаля
+dp = []
+for i in range(1,n+1):
+  tmp = []
+  for j in range(1,i+1):
+    tmp.append(1)
+  dp.append(tmp)
+
+# заполняем массив значениями (границыс не берем)
+for row in range(1,n):
+  for col in range(1,row):
+    dp[row][col] = dp[row-1][col-1] + dp[row-1][col]
+
+dp
+
+--------------------------------------------------------------------
+
+#5 Максимальная выгода. (без реализации за n^2)
+#Вводим минимальный текущий элемент (тк продажа строго после покупки), вводим переменную прибыли = (потенциальная цена продажи) - (минимальный текущий)
+
+def  maxProfit(prices):
+  profit  =  0
+  min_price  =  prices[0]
+  for  currentPriceIndex  in range(len(prices)):
+    profit  =  max(profit,  prices[currentPriceIndex]  -  min_price)
+    min_price  =  min(prices[currentPriceIndex],  min_price)
+  
+  return  profit
+
+maxProfit([8,9,3,7,4,16,12])
+
+--------------------------------------------------------------------------------
+
+#6.1 Размен монет (рекурсия с мемоизацией)
+def coinChange(coins, amount, memo=None):
+  
+  # Инициализируем memo при первом вызове
+  if memo is None:
+    memo = {}
+  
+  # Базовые случаи
+  if amount == 0:
+    return 0
+  if amount < 0:
+    return -1
+  
+  # Проверяем, есть ли результат в кэше
+  if amount in memo:
+    return memo[amount]
+  
+  # Инициализируем минимальное количество монет как недостижимое
+  min_coins = maxInt
+  
+  # Перебираем все монеты
+  for coin in coins:
+    # Рекурсивно вызываем функцию для суммы amount - coin
+    res = coinChange(coins, amount - coin, memo)
+    
+    # Если результат не -1 (т.е. сумму можно набрать) и он меньше текущего минимума
+    if res >= 0 and res < min_coins:
+      min_coins = res + 1 # +1 для текущей монеты
+  
+  # Если минимум не изменился (сумму невозможно набрать)
+  if min_coins == maxInt:
+    memo[amount] = -1
+  else:
+    memo[amount] = min_coins
+  
+  return memo[amount]
+
+coinChange([1, 2, 5], 11) # 3
+
+--------------------------------------------------------------------------------
+
+#6.2 Размен монет (итерационный подход)
+def coinChangeIterative(coins, amount):
+  maxInt = amount + 1
+  # Создаем массив dp длиной maxInt и заполняем его
+  dp = [maxInt]*(maxInt)
+
+  dp[0] = 0 # Базовый случай: для суммы 0 нужно 0 монет
+  # Перебираем все суммы от 1 до amount
+  # i - текущая целевая сумма, для которой
+  # ищем минимальное число монет.
+  for i in range (1,maxInt):
+    # Проверяем каждую монету
+    for coin in coins:
+      # Если монета может быть использована для текущей суммы
+      if (coin <= i):
+        # Обновляем минимальное количество монет
+        dp[i] = min(dp[i], dp[i - coin] + 1)
+
+  # Если сумму нельзя составить, возвращаем -1
+  if (dp[amount] == maxInt):
+    return -1
+
+  return dp[amount]
+
+
+
+coinChangeIterative([1, 2, 5], 11) # 3
+
+--------------------------------------------------------------------------------
+
+#7 Максимальный палиндром в строке (метод двух указателей)
+
+# Находит самую длинную палиндромную подстроку в строке s.
+# Использует алгоритм расширения от центра.
+def longestPalindrome(s):
+
+  current_max_left, current_max_right = 0,0
+  
+# Расширяется от центра (l, r) в обе стороны, пока символы совпадают и не вышли за границы строки.
+  def expand_around_center(l, r):
+    nonlocal current_max_left, current_max_right
+
+    while l >= 0 and r < len(s) and s[l] == s[r]:
+      if (r - l) > (current_max_right - current_max_left):
+        current_max_left = l
+        current_max_right = r
+      l -= 1
+      r += 1
+  
+  # Перебираем все возможные центры
+  for i in range(len(s)):
+    # Для палиндромов нечётной длины (центр в одном символе)
+    expand_around_center(i, i)
+    # Для палиндромов чётной длины (центр между двумя символами)
+    expand_around_center(i, i + 1)
+  
+  return s[current_max_left:current_max_right + 1]
+
+
+# Примеры использования:
+print(longestPalindrome("baba"))   # "bab"
+
+--------------------------------------------------------------------------------
+
+#8.1 Максимальный палиндром в строке (C DP - динамическим программированием и матрицей)
+#dp[i][j] показывает, является ли подстрока s[i:j+1] палиндром
+# 0 = "FALSE", 1 = "TRUE"
+def longestPalindromeDP(s):
+  if len(s) <=1 :
+    return len(s)
+
+  answer = 1
+
+  dp = [[1 if i == j else 0 for j in range(len(s))] for i in range(len(s))]
+  for j in range(1,len(s)):
+    for i in range(0,len(s)-j):
+      print(i,j)
+      if s[i] == s[i+j] and (dp[i+1][i+j-1] == 1 or j == 1):
+        dp[i][i+j] = 1
+        answer = max(answer, j + 1)
+  return dp,answer
+
+longestPalindromeDP('babba') #4
+
+--------------------------------------------------------------------------------
+
+#8.2 Максимальный палиндром в строке (C DP - динамическим программированием и матрицей)
+#Более читабельный код
+def longestPalindromeDP2(s):
+    n = len(s)
+    if n <= 1:
+        return n
+    
+    # dp[i][j] = True, если подстрока s[i:j+1] - палиндром
+    dp = [[False] * n for _ in range(n)]
+    max_len = 1
+    
+    # Все подстроки длины 1 - палиндромы
+    for i in range(n):
+        dp[i][i] = True
+    
+    # Проверяем подстроки длины 2
+    for i in range(n - 1):
+        if s[i] == s[i + 1]:
+            dp[i][i + 1] = True
+            max_len = 2
+    
+    # Проверяем подстроки длины 3 и больше
+    for length in range(3, n + 1):
+        for i in range(n - length + 1):
+            j = i + length - 1  # конец подстроки
+            
+            # Подстрока является палиндромом, если:
+            # 1. Крайние символы равны
+            # 2. Внутренняя подстрока (без крайних) - палиндром
+            if s[i] == s[j] and dp[i + 1][j - 1]:
+                dp[i][j] = True
+                
+                if length > max_len:
+                    max_len = length
+    
+    return max_len
+
+longestPalindromeDP2('babba') #4
