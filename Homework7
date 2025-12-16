@@ -1,0 +1,282 @@
+#1 Поиск компонент связности
+#Граф - словарь, где ключи - вершины, значения - все смежные вершины для данного ключа
+#visited - словарь, где ключи - вершины, значения True/False(посетили или нет). Необходимо, чтобы вечно по графу не ходить.
+#проходимся по всем вершинам, которые не посещали
+
+def find_connected_components(graph):
+  visited = {}
+  for i in range(1,len(graph)+1):
+    visited[i] = False
+  
+  connected_components = []
+  for i in range(1,len(graph)+1):
+    currentNode = i
+    if not visited[currentNode]:
+      component = []
+      dfs(graph, currentNode, visited, component)
+      connected_components.append(component)
+  
+  return connected_components
+
+#проходимся по одной компоненте связности (поиск в глубину, обходим полностью граф)
+def dfs(graph, v, visited, component):
+  visited[v] = True
+  component.append(v)
+  for i in graph[v]:
+    if not visited[i]:
+      dfs(graph, i, visited, component)
+  
+graph = {
+ 1: [2, 3],
+ 2: [1, 3],
+ 3: [1, 2],
+ 4: [6, 7],
+ 5: [6, 7],
+ 6: [4, 5, 7],
+ 7: [4, 5, 6],
+ 8: [11],
+ 9: [10, 11],
+ 10: [9],
+ 11: [8, 9]
+}
+
+find_connected_components(graph)
+#[[1, 2, 3], [4, 6, 5, 7], [8, 11, 9, 10]]
+
+##############################################################################################################
+
+#2 Раскраска графа
+
+def dfs_color(graph, v, visited, color):
+  visited[v] = color
+  for i in graph[v]:
+    if visited[i] == 0:
+      dfs_color(graph, i, visited, color)
+  
+  
+def find_connected_components_color(graph):
+  visited = {}
+  for i in range(1, len(graph)+1):
+    visited[i] = 0
+  
+  color = 0
+  for node in graph:
+    if visited[node] == 0:
+      color += 1
+      dfs_color(graph, node, visited, color)
+  
+  
+  return visited
+
+graph = {
+ 1: [2, 3],
+ 2: [1, 3],
+ 3: [1, 2],
+ 4: [6, 7],
+ 5: [6, 7],
+ 6: [4, 5, 7],
+ 7: [4, 5, 6],
+ 8: [11],
+ 9: [10, 11],
+ 10: [9],
+ 11: [8, 9]
+}
+
+find_connected_components_color(graph)
+#{1: 1, 2: 1, 3: 1, 4: 2, 5: 2, 6: 2, 7: 2, 8: 3, 9: 3, 10: 3, 11: 3}
+
+##############################################################################################################
+
+#3 Поиск цикла в графе
+#при вызове dfs необходимо учитывать родительские вершины.
+#Если вершина, в которую пришли, была посещена и при этом не является родительской для текущей вершины, то считаем, что в таком графе есть цикл.
+
+def has_cycle(graph):
+  visited = []
+  #for нужен для неодносвязного графа
+  for vertex in graph:
+    if vertex not in visited:
+      if dfs(graph, vertex, None, visited):
+        return True
+     
+  return False
+
+def dfs(graph, vertex, parent, visited):
+  visited.append(vertex)
+  for neighbor in graph[vertex]:
+    if neighbor != parent:
+      if neighbor in visited or dfs(graph, neighbor, vertex, visited):
+          return True
+        
+  return False
+
+
+
+graph = {
+ 1: [2,3],
+ 2: [1,3],
+ 3: [2,1]}
+
+has_cycle(graph)
+#True
+
+##############################################################################################################
+
+#4 Является ли дерево графом
+#Нет циклов, односвязный
+#BFS
+
+def isTree(graph, start):
+  visited = []
+  queue = [start]
+  parent = {start: None}
+
+  while queue:
+    vertex = queue.pop()
+    visited.append(vertex)
+    for neighbor in graph[vertex]:
+      if neighbor not in visited:
+        queue.append(neighbor)
+        parent[neighbor] = vertex
+      else:
+        if parent[vertex] != neighbor:
+          return False
+
+  return len(visited) == len(graph)
+
+
+graph = {
+ 8: [11],
+ 9: [10, 11],
+ 10: [9],
+ 11: [8, 9]}
+
+isTree(graph, 10)
+#True
+
+##############################################################################################################
+
+#5 Алгоритм Дейкстры (Поиск кратчайшего пути)
+#Каждой вершине проставляем значения - минимальный вес рёбер, которые нужно пройти, чтобы попасть в нее из стартовой вершины. (как в динамическом программировании)
+#В python модуль heapq работает со списком напрямую и управляет его элементами так, чтобы поддерживать свойства минимальной кучи.
+
+import heapq
+
+def dijkstra(graph, start):
+  # Создаем структуру данных для хранения кратчайших расстояний
+  distances = {vertex: float('infinity') for vertex in graph}
+  distances[start] = 0 # Расстояние до стартовой вершины 0
+  
+  # Приоритетная очередь (куча) для хранения вершин и их расстояний
+  priority_queue = [(0, start)]
+  
+  while priority_queue:
+    current_distance, current_vertex = heapq.heappop(priority_queue)
+    
+    # Обрабатываем только если текущее расстояние меньше ранее записанного
+    if current_distance > distances[current_vertex]:
+      continue
+    
+    # Обновляем расстояния до соседей
+    for neighbor, weight in graph[current_vertex].items():
+      distance = current_distance + weight
+      
+      # Если нашли более короткий путь
+      if distance < distances[neighbor]:
+        distances[neighbor] = distance
+        heapq.heappush(priority_queue, (distance, neighbor))
+  
+  return distances
+
+
+graph = {
+ 'A': {'B': 1, 'C': 5},
+ 'B': {'A': 1, 'C': 2, 'D': 3},
+ 'C': {'A': 5, 'B': 2, 'D': 1},
+ 'D': {'B': 3, 'C': 1}
+}
+
+dijkstra(graph, 'A')
+#{'A': 0, 'B': 1, 'C': 3, 'D': 4}
+
+##############################################################################################################
+
+#6 Проверка на двудольность BFS
+#Красим граф двумя цветами. Если две соседние вершины имеют одинаковый цвет, граф не является двудольным.
+
+from collections import deque
+
+def isBipartite(graph):
+  n = len(graph)
+  # Массив для хранения цветов вершин (0 - не раскрашена, 1 - первый цвет, -1 - второй цвет)
+  colors = [0] * (n+1)
+  
+  def bfs(start):
+    queue = deque([start]) # Очередь для BFS
+    colors[start] = 1 # Красим начальную вершину в первый цвет
+    
+    while queue:
+      node = queue.popleft() # Извлекаем текущую вершину
+      for neighbor in graph[node]:
+        if colors[neighbor] == 0: # Если сосед ещё не раскрашен
+          colors[neighbor] = -colors[node] # Красим в противоположный цвет
+          queue.append(neighbor)
+        elif colors[neighbor] == colors[node]: # Если сосед имеет тот же цвет
+          return False # Граф не двудольный
+    return True
+  
+  #обрабатка несвязных графов
+  for i in range(1,n+1):
+    if colors[i] == 0: # Если вершина ещё не посещена
+      if not bfs(i): # Запускаем BFS и проверяем
+        return False
+
+  return True
+
+
+
+graph = {
+ 1: [2,3],
+ 2: [1,3],
+ 3: [2,1]}
+
+isBipartite(graph)
+#False
+
+##############################################################################################################
+
+#7 Проверка на двудольность DFS
+
+def isBipartiteDFS  (graph):
+  n = len(graph)
+  # Массив для хранения цветов вершин (0 - не раскрашена, 1 - первый цвет, -1 - второй цвет)
+  colors = [0] * (n+1)
+  
+  def dfs(node,c):
+    colors[node] = c # Красим текущую вершину
+
+    for neighbor in graph[node]:
+      if colors[neighbor] == 0: # Если сосед ещё не раскрашен
+        if not dfs(neighbor, -c): # Красим в противоположный цвет
+          return False
+      elif colors[neighbor] == colors[node]: # Если сосед имеет тот же цвет
+        return False # Граф не двудольный
+    return True
+  
+  #обрабатка несвязных графов
+  for i in range(1,n+1):
+    if colors[i] == 0: # Если вершина ещё не посещена
+      if not dfs(i,1): # Запускаем BFS и проверяем
+        return False
+
+  return True
+
+
+
+graph = {
+ 1: [2,3],
+ 2: [1,3],
+ 3: [2,1]}
+
+isBipartiteDFS(graph)
+#False
